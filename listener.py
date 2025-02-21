@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 CODE_FILE = Path.cwd().joinpath("templates/code.dm")
 TEST_DME = Path.cwd().joinpath("templates/test.dme")
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 5000
 MAIN_PROC = "proc/main()"
 BYOND_ROOT = Path.cwd().joinpath("byond")
