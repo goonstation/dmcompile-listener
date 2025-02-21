@@ -86,7 +86,6 @@ def compileTest(codeText: str, version: str):
     randomDir = Path.cwd().joinpath(randomString())
     randomDir.mkdir()
     shutil.copyfile(TEST_DME, randomDir.joinpath("test.dme"))
-    print(randomDir.joinpath("test.dme"))
     with open(randomDir.joinpath("code.dm"), "a") as fc:
         if MAIN_PROC not in codeText:
             fc.write(loadTemplate(codeText))
@@ -118,17 +117,15 @@ def compileTest(codeText: str, version: str):
     run_log = re.sub(
         r"The BYOND hub reports that port \d* is not reachable.", "", run_log
     )  # remove the network error message
+    run_log = re.sub(
+        r"World opened on network port \d*.", "", run_log
+    )  # remove the network open message
     compile_log = (compile_log[:1200] + "...") if len(compile_log) > 1200 else compile_log
     run_log = (run_log[:1200] + "...") if len(run_log) > 1200 else run_log
 
     shutil.rmtree(randomDir)
 
-    if f"Unable to find image 'test:{version}' locally" in run_log:
-        results = {"build_error": True, "exception": run_log}
-    else:
-        results = {"compile_log": compile_log, "run_log": run_log, "timeout": test_killed}
-
-    return results
+    return {"compile_log": compile_log, "run_log": run_log, "timeout": test_killed}
 
 
 if __name__ == "__main__":
