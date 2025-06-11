@@ -3,7 +3,7 @@ var/TEST/aaaaaa=new
 $proc
 	$code
 TEST/New()
-	world.log << "---------------"
+	world.log << "==============="
 	main()
 	eval("")
 	shutdown()
