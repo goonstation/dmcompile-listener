@@ -66,18 +66,39 @@ def buildVersion(version: str):
         byond_path = f"{BYOND_ROOT}/{version}"
         file_name = f"{version}_byond_linux.zip"
         download_path = f"/tmp/{file_name}"
-        url = f"https://www.byond.com/download/build/{byond_major}/{file_name}"
 
-        r = requests.get(url)
-        with open(download_path, "wb") as outfile:
-            outfile.write(r.content)
+        mirror_url = f"https://spacestation13.github.io/byond-builds/{byond_major}/{file_name}"
+        byond_url = f"https://www.byond.com/download/build/{byond_major}/{file_name}"
 
-        with zipfile.ZipFile(download_path, "r") as zip_ref:
-            zip_ref.extractall("/tmp")
+        headers = {'User-Agent': 'DMCompile/1.0'}
+        download_success = False
 
-        shutil.move("/tmp/byond", byond_path)
-        os.system(f"chmod -R 770 {byond_path}/bin")
-        os.remove(download_path)
+        try:
+            print(f"Attempting to download from mirror: {mirror_url}")
+            r = requests.get(mirror_url, headers=headers, timeout=(2, 10))
+            r.raise_for_status()  # Raise exception for 4XX/5XX responses
+            download_success = True
+        except (requests.RequestException, requests.Timeout) as e:
+            print(f"Mirror download failed: {e}")
+            print("Falling back to byond.com")
+            try:
+                r = requests.get(byond_url, headers=headers, timeout=(2, 10))
+                r.raise_for_status()
+                download_success = True
+            except (requests.RequestException, requests.Timeout) as e:
+                print(f"BYOND download failed too: {e}")
+                raise Exception("Failed to download BYOND from both sources")
+        
+        if download_success:
+            with open(download_path, "wb") as outfile:
+                outfile.write(r.content)
+
+            with zipfile.ZipFile(download_path, "r") as zip_ref:
+                zip_ref.extractall("/tmp")
+
+            shutil.move("/tmp/byond", byond_path)
+            os.system(f"chmod -R 770 {byond_path}/bin")
+            os.remove(download_path)
 
 
 def compileTest(codeText: str, version: str):
